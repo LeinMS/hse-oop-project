@@ -124,13 +124,13 @@ RGBMatrix& RGBMatrix::operator=(const RGBMatrix& mat)
 std::ostream& operator<<(std::ostream& out, const RGBMatrix& mat)
 {
     static const std::vector<std::string> names = {"r", "g", "b"};
-    for (size_t r = 0; r < mat.m_rows; ++r) {
-        for (size_t c = 0; c < mat.m_rows; ++c) {
+    for (size_t r = 0; r < mat.getRows(); ++r) {
+        for (size_t c = 0; c < mat.getCols(); ++c) { // Changed from getRows() to getCols()
             out << (c > 0 ? " " : "") << std::setw(2);
             out << "[";
-            for (size_t ch = 0; ch < mat.m_channels; ++ch) {
+            for (size_t ch = 0; ch < mat.getChannels(); ++ch) {
                 out << (ch > 0 ? ", " : "") << std::setw(3);
-                out << names[ch] << ": " << mat.at(r, c, ch);
+                out << names[ch] << ": " << static_cast<int>(mat.at(r, c, ch));
             }
             out << "]";
         }
@@ -138,3 +138,28 @@ std::ostream& operator<<(std::ostream& out, const RGBMatrix& mat)
     }
     return out;
 }
+// rgb_matrix.cpp
+void RGBMatrix::draw(const Shape& shape) {
+    const RGBColor* color = dynamic_cast<const RGBColor*>(shape.getColor());
+    std::array<unsigned char, 3> rgbValues;
+
+    if (color) {
+        rgbValues = color->getRGBColor();
+    } else {
+        // Convert BWColor to RGBColor
+        unsigned char bwValue = shape.getColor()->getBWColor();
+        rgbValues = {bwValue, bwValue, bwValue};
+    }
+
+    const std::vector<Point>& points = shape.getPoints();
+    for (const Point& p : points) {
+        if (p.x >= 0 && p.x < static_cast<int>(m_cols) &&
+            p.y >= 0 && p.y < static_cast<int>(m_rows)) {
+            at(p.y, p.x, 0) = rgbValues[0];
+            at(p.y, p.x, 1) = rgbValues[1];
+            at(p.y, p.x, 2) = rgbValues[2];
+        }
+    }
+}
+
+

@@ -109,8 +109,8 @@ BWMatrix& BWMatrix::operator=(const BWMatrix& mat)
 
 std::ostream& operator<<(std::ostream& out, const BWMatrix& mat)
 {
-    for (size_t r = 0; r < mat.m_rows; ++r) {
-        for (size_t c = 0; c < mat.m_rows; ++c) {
+    for (size_t r = 0; r < mat.getRows(); ++r) {
+        for (size_t c = 0; c < mat.getCols(); ++c) { // Changed from getRows() to getCols()
             out << (c > 0 ? " " : "") << std::setw(2);
             out << "[";
             out << mat.at(r, c);
@@ -120,3 +120,26 @@ std::ostream& operator<<(std::ostream& out, const BWMatrix& mat)
     }
     return out;
 }
+
+// bw_matrix.cpp
+void BWMatrix::draw(const Shape& shape) {
+    const BWColor* color = dynamic_cast<const BWColor*>(shape.getColor());
+    unsigned char bwValue;
+
+    if (color) {
+        bwValue = color->getBWColor();
+    } else {
+        // Convert RGBColor to BWColor
+        bwValue = shape.getColor()->getBWColor();
+    }
+
+    const std::vector<Point>& points = shape.getPoints();
+    for (const Point& p : points) {
+        if (p.x >= 0 && p.x < static_cast<int>(m_cols) &&
+            p.y >= 0 && p.y < static_cast<int>(m_rows)) {
+            at(p.y, p.x) = bwValue;
+        }
+    }
+}
+
+
